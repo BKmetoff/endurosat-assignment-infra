@@ -1,0 +1,15 @@
+# Local IDE files
+.vscode
+.terraform.lock.hcl
+
+# Local .terraform directories
+**/.terraform/*
+.terraform
+workspace
+
+# .tfstate files
+*.tfstate
+*.tfstate.*
+
+# Teraform plan files
+*.out
