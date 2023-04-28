@@ -10,27 +10,33 @@ resource "aws_iam_openid_connect_provider" "github" {
   thumbprint_list = ["6938fd4d98bab03faadb97b34396831e3780aea1"]
 }
 
-
-data "aws_iam_policy_document" "github_actions_assume_role" {
-  statement {
-    actions = ["sts:AssumeRoleWithWebIdentity"]
-    principals {
-      type        = "Federated"
-      identifiers = [aws_iam_openid_connect_provider.github.arn]
-    }
-    condition {
-      test     = "StringLike"
-      variable = "token.actions.githubusercontent.com:sub"
-      values   = ["repo:${var.github_actions.organization}/${var.github_actions.repository}:*"]
-    }
-  }
-}
-
+# OIDC
 resource "aws_iam_role" "github_actions" {
-  name               = local.role_name
-  assume_role_policy = data.aws_iam_policy_document.github_actions_assume_role.json
+  name = local.role_name
+  assume_role_policy = jsonencode({
+    "Version" : "2012-10-17",
+    "Statement" : [
+      {
+        "Sid" : "",
+        "Effect" : "Allow",
+        "Principal" : {
+          "Federated" : "${aws_iam_openid_connect_provider.github.arn}"
+        },
+        "Action" : "sts:AssumeRoleWithWebIdentity",
+        "Condition" : {
+          "StringLike" : {
+            "token.actions.githubusercontent.com:sub" : "repo:${var.github_actions.organization}/${var.github_actions.repository}:*"
+          },
+          "StringEquals" : {
+            "token.actions.githubusercontent.com:aud" : "sts.amazonaws.com"
+          }
+        }
+      }
+    ]
+  })
 }
 
+# repo
 data "aws_iam_policy_document" "github_actions" {
   statement {
     resources = [aws_ecr_repository.repo.arn]
@@ -46,24 +52,15 @@ data "aws_iam_policy_document" "github_actions" {
   }
 
   statement {
-    actions = [
-      "ecr:GetAuthorizationToken",
-    ]
+    actions   = ["ecr:GetAuthorizationToken", ]
     resources = ["*"]
   }
 }
 
 resource "aws_iam_policy" "github_actions" {
-  name   = local.policy_name
-  policy = data.aws_iam_policy_document.github_actions.json
-  description = join(
-    "-",
-    [
-      "Allow Github Actions to push to",
-      "${var.name} from",
-      "${var.github_actions.organization}/${var.github_actions.repository}"
-    ]
-  )
+  name        = local.policy_name
+  policy      = data.aws_iam_policy_document.github_actions.json
+  description = "Allow Github Actions to push to ${var.name} from ${var.github_actions.organization}/${var.github_actions.repository}"
 }
 
 resource "aws_iam_role_policy_attachment" "github_actions" {

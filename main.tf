@@ -1,11 +1,7 @@
 locals {
-  region                   = "eu-west-1"
-  environment              = "production"
-  cluster_name             = "${local.region}-${local.environment}"
-  github_oidc_provider_arn = "arn:aws:iam::936892409162:oidc-provider/token.actions.githubusercontent.com"
-  org                      = "bkmetoff"
-  repo                     = "endurosat-assignment-infra"
-  role_name_suffix         = local.repo
+  region = "eu-west-1"
+  org    = "BKmetoff"
+  repo   = "endurosat-assignment"
 }
 
 terraform {
