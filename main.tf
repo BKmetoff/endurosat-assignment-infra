@@ -1,7 +1,8 @@
 locals {
-  region = "eu-west-1"
-  org    = "BKmetoff"
-  repo   = "endurosat-assignment"
+  region              = "eu-west-1"
+  org                 = "BKmetoff"
+  resource_identifier = "endurosat-assignment"
+  tag                 = "latest"
 }
 
 terraform {
@@ -27,13 +28,37 @@ provider "aws" {
   region  = var.aws_region
 }
 
+module "vpc" {
+  source = "./modules/VPC"
 
-module "aws_ecr_repository" {
-  source = "./modules/ECR"
+  name         = local.resource_identifier
+  aws_region   = local.region
+  subnet_count = 2
+}
 
-  name = local.repo
-  github_actions = {
-    organization = local.org,
-    repository   = local.repo
+data "aws_caller_identity" "current" {}
+
+module "ecs" {
+  source = "./modules/ECS"
+
+  private_subnet_ids              = module.vpc.private_subnet_ids
+  load_balancer_target_group_id   = module.vpc.load_balancer_target_group_id
+  load_balancer_security_group_id = module.vpc.load_balancer_security_group_id
+  vpc_id                          = module.vpc.vpc_id
+
+  aws_region    = local.region
+  account_id    = data.aws_caller_identity.current.account_id
+  service_count = 1
+
+  container_port = 8000
+
+  container_resources = {
+    cpu    = 1024
+    memory = 2048
+  }
+
+  docker_image = {
+    name = local.resource_identifier,
+    tag  = local.tag
   }
 }

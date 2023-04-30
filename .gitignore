@@ -14,5 +14,4 @@ workspace
 # Teraform plan files
 *.out
 
-
 .env.local
