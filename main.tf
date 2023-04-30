@@ -1,8 +1,7 @@
 locals {
-  region              = "eu-west-1"
   org                 = "BKmetoff"
   resource_identifier = "endurosat-assignment"
-  tag                 = "latest"
+  docker_image_tag    = "latest"
 }
 
 terraform {
@@ -32,8 +31,18 @@ module "vpc" {
   source = "./modules/VPC"
 
   name         = local.resource_identifier
-  aws_region   = local.region
+  aws_region   = var.aws_region
   subnet_count = 2
+}
+
+module "ecr" {
+  source = "./modules/ECR"
+
+  name = local.resource_identifier
+  github_actions = {
+    organization = local.org
+    repository   = local.resource_identifier
+  }
 }
 
 data "aws_caller_identity" "current" {}
@@ -46,7 +55,7 @@ module "ecs" {
   load_balancer_security_group_id = module.vpc.load_balancer_security_group_id
   vpc_id                          = module.vpc.vpc_id
 
-  aws_region    = local.region
+  aws_region    = var.aws_region
   account_id    = data.aws_caller_identity.current.account_id
   service_count = 1
 
@@ -59,6 +68,8 @@ module "ecs" {
 
   docker_image = {
     name = local.resource_identifier,
-    tag  = local.tag
+    tag  = local.docker_image_tag
   }
+
+  depends_on = [module.ecr, module.vpc]
 }
