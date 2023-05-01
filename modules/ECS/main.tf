@@ -1,18 +1,18 @@
 locals {
-  task_name     = var.docker_image.name
-  docker_image  = "${var.docker_image.name}:${var.docker_image.tag}"
-  image_address = "${var.account_id}.dkr.ecr.${var.aws_region}.amazonaws.com/${local.docker_image}"
+  docker_image              = "${var.docker_image.name}-${var.environment}:${var.docker_image.tag}"
+  docker_image_full_address = "${var.account_id}.dkr.ecr.${var.aws_region}.amazonaws.com/${local.docker_image}"
+  deployment                = "${var.docker_image.name}-${var.environment}"
 }
 
 resource "aws_ecs_cluster" "cluster" {
-  name = local.task_name
+  name = local.deployment
 }
 
 data "aws_iam_role" "ecs_task_execution_role" {
   name = "ecsTaskExecutionRole"
 }
 resource "aws_ecs_task_definition" "task" {
-  family                   = var.docker_image.name
+  family                   = local.deployment
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
   cpu                      = var.container_resources.cpu
@@ -22,10 +22,10 @@ resource "aws_ecs_task_definition" "task" {
   container_definitions = <<DEFINITION
 [
   {
-    "image": "${local.image_address}",
+    "image": "${local.docker_image_full_address}",
     "cpu": ${var.container_resources.cpu},
     "memory": ${var.container_resources.memory},
-    "name": "${local.task_name}",
+    "name": "${local.deployment}",
     "networkMode": "awsvpc",
     "portMappings": [
       {
@@ -40,7 +40,7 @@ DEFINITION
 
 
 resource "aws_security_group" "task_sg" {
-  name   = "${local.task_name}-task-security-group"
+  name   = "${local.deployment}-task-security-group"
   vpc_id = var.vpc_id
 
   ingress {
@@ -60,7 +60,7 @@ resource "aws_security_group" "task_sg" {
 
 
 resource "aws_ecs_service" "service" {
-  name            = "${local.task_name}-service"
+  name            = "${local.deployment}-service"
   cluster         = aws_ecs_cluster.cluster.id
   task_definition = aws_ecs_task_definition.task.arn
   launch_type     = "FARGATE"
@@ -73,7 +73,7 @@ resource "aws_ecs_service" "service" {
 
   load_balancer {
     target_group_arn = var.load_balancer_target_group_id
-    container_name   = local.task_name
+    container_name   = local.deployment
     container_port   = var.container_port
   }
 }

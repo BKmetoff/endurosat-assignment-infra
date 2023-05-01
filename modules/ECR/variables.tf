@@ -9,3 +9,8 @@ variable "github_actions" {
     repository   = string
   })
 }
+
+variable "environment" {
+  description = "The name of the repository environment, i.e. 'production','staging', etc."
+  type        = string
+}

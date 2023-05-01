@@ -1,7 +1,9 @@
 locals {
   org                 = "BKmetoff"
   resource_identifier = "endurosat-assignment"
+  docker_image_name   = local.resource_identifier
   docker_image_tag    = "latest"
+  environment         = "staging"
 }
 
 terraform {
@@ -38,7 +40,9 @@ module "vpc" {
 module "ecr" {
   source = "./modules/ECR"
 
-  name = local.resource_identifier
+  name        = local.resource_identifier
+  environment = local.environment
+
   github_actions = {
     organization = local.org
     repository   = local.resource_identifier
@@ -49,6 +53,8 @@ data "aws_caller_identity" "current" {}
 
 module "ecs" {
   source = "./modules/ECS"
+
+  environment = local.environment
 
   private_subnet_ids              = module.vpc.private_subnet_ids
   load_balancer_target_group_id   = module.vpc.load_balancer_target_group_id
@@ -67,7 +73,7 @@ module "ecs" {
   }
 
   docker_image = {
-    name = local.resource_identifier,
+    name = local.docker_image_name,
     tag  = local.docker_image_tag
   }
 

@@ -11,6 +11,11 @@ variable "docker_image" {
   })
 }
 
+variable "environment" {
+  description = "The name of the environment served in the cluster, i.e. 'production','staging', etc."
+  type        = string
+}
+
 variable "container_resources" {
   description = "The CPU and memory to be allocated for the container"
   type = object({
@@ -21,7 +26,7 @@ variable "container_resources" {
 
 variable "container_port" {
   description = "The port of the container"
-  type = number
+  type        = number
 }
 
 variable "account_id" {

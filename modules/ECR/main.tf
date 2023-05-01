@@ -1,6 +1,6 @@
 # Repository in AWS
 resource "aws_ecr_repository" "repo" {
-  name                 = var.name
+  name                 = "${var.name}-${var.environment}"
   image_tag_mutability = "MUTABLE"
 
   image_scanning_configuration {
@@ -16,7 +16,7 @@ resource "aws_ecr_repository" "repo" {
 
 # KMS key
 resource "aws_kms_key" "key" {
-  description = "KMS key for ECR repo ${var.name}"
+  description = "KMS key for ECR repo ${var.name}-${var.environment}"
 }
 
 # Policy

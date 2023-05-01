@@ -1,6 +1,6 @@
 locals {
-  policy_name = "github-actions-${var.github_actions.organization}-${var.github_actions.repository}"
-  role_name   = "github-actions-${var.github_actions.organization}-${var.github_actions.repository}"
+  policy_name = "gh-actions-${var.github_actions.organization}-${var.github_actions.repository}"
+  role_name   = "gh-actions-${var.github_actions.organization}-${var.github_actions.repository}"
 }
 
 
@@ -60,7 +60,7 @@ data "aws_iam_policy_document" "github_actions" {
 resource "aws_iam_policy" "github_actions" {
   name        = local.policy_name
   policy      = data.aws_iam_policy_document.github_actions.json
-  description = "Allow Github Actions to push to ${var.name} from ${var.github_actions.organization}/${var.github_actions.repository}"
+  description = "Allow Github Actions to push to ${var.name}-${var.environment} from ${var.github_actions.organization}/${var.github_actions.repository}"
 }
 
 resource "aws_iam_role_policy_attachment" "github_actions" {
