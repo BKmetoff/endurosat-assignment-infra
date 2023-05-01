@@ -32,7 +32,11 @@ provider "aws" {
 module "vpc" {
   source = "./modules/VPC"
 
-  name         = local.resource_identifier
+  # outputs 'endurosat' to fit within the 32 char limit
+  # of the 'name' property of AWS resources
+  name = substr(local.resource_identifier, 0, 9)
+
+  environments = local.environments
   aws_region   = var.aws_region
   subnet_count = 2
 }
@@ -57,7 +61,7 @@ module "ecs" {
   environments = local.environments
 
   private_subnet_ids              = module.vpc.private_subnet_ids
-  load_balancer_target_group_id   = module.vpc.load_balancer_target_group_id
+  load_balancer_target_group_ids  = module.vpc.load_balancer_target_group_ids
   load_balancer_security_group_id = module.vpc.load_balancer_security_group_id
   vpc_id                          = module.vpc.vpc_id
 

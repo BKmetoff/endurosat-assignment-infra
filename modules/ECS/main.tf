@@ -1,5 +1,5 @@
 locals {
-  repo_address = "${var.account_id}.dkr.ecr.${var.aws_region}.amazonaws.com/"
+  repo_address = "${var.account_id}.dkr.ecr.${var.aws_region}.amazonaws.com"
 }
 
 resource "aws_ecs_cluster" "cluster" {
@@ -88,7 +88,7 @@ resource "aws_ecs_service" "service" {
   desired_count = var.service_count
 
   load_balancer {
-    target_group_arn = var.load_balancer_target_group_id
+    target_group_arn = var.load_balancer_target_group_ids[count.index]
     container_name   = "${var.docker_image.name}-${var.environments[count.index]}"
     container_port   = var.container_port
   }

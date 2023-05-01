@@ -91,14 +91,18 @@ resource "aws_security_group" "lb" {
 
 # attach the load balancer to all public subnets
 resource "aws_lb" "lb" {
-  name            = "${var.name}-lb"
+  count = length(var.environments)
+
+  name            = "${var.name}-${var.environments[count.index]}-lb"
   subnets         = aws_subnet.public[*].id
   security_groups = [aws_security_group.lb.id]
 }
 
-# forward the traffic coming to the load balancer to ECS
+# forward the traffic coming to the load balancers to ECS
 resource "aws_lb_target_group" "lb_tg" {
-  name        = "${var.name}-lb-tg"
+  count = length(var.environments)
+
+  name        = "${var.name}-${var.environments[count.index]}-lb-tg"
   port        = 80
   protocol    = "HTTP"
   vpc_id      = aws_vpc.vpc.id
@@ -106,12 +110,14 @@ resource "aws_lb_target_group" "lb_tg" {
 }
 
 resource "aws_lb_listener" "listener" {
-  load_balancer_arn = aws_lb.lb.id
+  count = length(var.environments)
+
+  load_balancer_arn = aws_lb.lb[count.index].id
   port              = "80"
   protocol          = "HTTP"
 
   default_action {
-    target_group_arn = aws_lb_target_group.lb_tg.id
+    target_group_arn = aws_lb_target_group.lb_tg[count.index].id
     type             = "forward"
   }
 }

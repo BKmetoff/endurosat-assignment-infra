@@ -19,3 +19,7 @@ variable "subnet_count" {
   type        = number
 }
 
+variable "environments" {
+  description = "The names of the environments to create load balancers for"
+  type        = list(string)
+}

@@ -44,9 +44,9 @@ variable "private_subnet_ids" {
   type        = list(string)
 }
 
-variable "load_balancer_target_group_id" {
-  description = "The ID of the load balancer target group"
-  type        = string
+variable "load_balancer_target_group_ids" {
+  description = "A list of the IDs of the load balancers target groups"
+  type        = list(string)
 }
 
 variable "load_balancer_security_group_id" {
