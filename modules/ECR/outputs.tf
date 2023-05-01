@@ -1,11 +1,11 @@
 output "arn" {
   description = "ARN of the ECR"
-  value       = aws_ecr_repository.repo.arn
+  value       = aws_ecr_repository.repo[*].arn
 }
 
 output "url" {
   description = "Repository URL"
-  value       = aws_ecr_repository.repo.repository_url
+  value       = aws_ecr_repository.repo[0].repository_url
 }
 
 output "role_arn" {

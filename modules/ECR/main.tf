@@ -1,6 +1,8 @@
-# Repository in AWS
+# Create one repository for each environment
 resource "aws_ecr_repository" "repo" {
-  name                 = "${var.name}-${var.environment}"
+  count = length(var.environments)
+
+  name                 = "${var.name}-${var.environments[count.index]}"
   image_tag_mutability = "MUTABLE"
 
   image_scanning_configuration {
@@ -9,17 +11,18 @@ resource "aws_ecr_repository" "repo" {
 
   encryption_configuration {
     encryption_type = "KMS"
-    kms_key         = aws_kms_key.key.arn
+    kms_key         = aws_kms_key.key[count.index].arn
   }
 
 }
 
-# KMS key
+# KMS keys
 resource "aws_kms_key" "key" {
-  description = "KMS key for ECR repo ${var.name}-${var.environment}"
+  count       = length(var.environments)
+  description = "KMS key for ECR repo ${var.name}-${var.environments[count.index]}"
 }
 
-# Policy
+# Use the same policy for all repos
 data "aws_iam_policy_document" "allow_all" {
   statement {
     effect = "Allow"
@@ -47,6 +50,8 @@ data "aws_iam_policy_document" "allow_all" {
 }
 
 resource "aws_ecr_repository_policy" "repo_policy" {
-  repository = aws_ecr_repository.repo.name
+  count = length(var.environments)
+
+  repository = aws_ecr_repository.repo[count.index].name
   policy     = data.aws_iam_policy_document.allow_all.json
 }

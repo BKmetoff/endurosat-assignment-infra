@@ -3,7 +3,7 @@ locals {
   resource_identifier = "endurosat-assignment"
   docker_image_name   = local.resource_identifier
   docker_image_tag    = "latest"
-  environment         = "staging"
+  environments        = ["staging", "production"]
 }
 
 terraform {
@@ -40,8 +40,8 @@ module "vpc" {
 module "ecr" {
   source = "./modules/ECR"
 
-  name        = local.resource_identifier
-  environment = local.environment
+  name         = local.resource_identifier
+  environments = local.environments
 
   github_actions = {
     organization = local.org
@@ -54,7 +54,7 @@ data "aws_caller_identity" "current" {}
 module "ecs" {
   source = "./modules/ECS"
 
-  environment = local.environment
+  environments = local.environments
 
   private_subnet_ids              = module.vpc.private_subnet_ids
   load_balancer_target_group_id   = module.vpc.load_balancer_target_group_id

@@ -11,9 +11,9 @@ variable "docker_image" {
   })
 }
 
-variable "environment" {
-  description = "The name of the environment served in the cluster, i.e. 'production','staging', etc."
-  type        = string
+variable "environments" {
+  description = "The names of the repository environments, i.e. 'production','staging', etc."
+  type        = list(string)
 }
 
 variable "container_resources" {

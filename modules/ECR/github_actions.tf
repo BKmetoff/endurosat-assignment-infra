@@ -38,8 +38,12 @@ resource "aws_iam_role" "github_actions" {
 
 # repo
 data "aws_iam_policy_document" "github_actions" {
+  count = length(var.environments)
+
   statement {
-    resources = [aws_ecr_repository.repo.arn]
+    resources = [
+      aws_ecr_repository.repo[count.index].arn
+    ]
     actions = [
       "ecr:BatchGetImage",
       "ecr:BatchCheckLayerAvailability",
@@ -58,12 +62,16 @@ data "aws_iam_policy_document" "github_actions" {
 }
 
 resource "aws_iam_policy" "github_actions" {
-  name        = local.policy_name
-  policy      = data.aws_iam_policy_document.github_actions.json
-  description = "Allow Github Actions to push to ${var.name}-${var.environment} from ${var.github_actions.organization}/${var.github_actions.repository}"
+  count = length(var.environments)
+
+  name        = "${local.policy_name}-${var.environments[count.index]}"
+  policy      = data.aws_iam_policy_document.github_actions[count.index].json
+  description = "Allow Github Actions to push to ECR from ${var.github_actions.organization}/${var.github_actions.repository}"
 }
 
 resource "aws_iam_role_policy_attachment" "github_actions" {
+  count = length(var.environments)
+
   role       = aws_iam_role.github_actions.name
-  policy_arn = aws_iam_policy.github_actions.arn
+  policy_arn = aws_iam_policy.github_actions[count.index].arn
 }
