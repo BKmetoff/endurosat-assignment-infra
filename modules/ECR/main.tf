@@ -55,3 +55,30 @@ resource "aws_ecr_repository_policy" "repo_policy" {
   repository = aws_ecr_repository.repo[count.index].name
   policy     = data.aws_iam_policy_document.allow_all.json
 }
+
+# remove untagged images
+# keep only one image per repo
+resource "aws_ecr_lifecycle_policy" "foopolicy" {
+  count = length(var.environments)
+
+  repository = aws_ecr_repository.repo[count.index].name
+
+  policy = <<EOF
+{
+    "rules": [
+        {
+            "rulePriority": 1,
+            "description": "Keep only one image in the repo",
+            "selection": {
+                "tagStatus": "untagged",
+                "countType": "imageCountMoreThan",
+                "countNumber": 1
+            },
+            "action": {
+                "type": "expire"
+            }
+        }
+    ]
+}
+EOF
+}
