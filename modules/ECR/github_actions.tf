@@ -59,6 +59,14 @@ data "aws_iam_policy_document" "github_actions" {
     actions   = ["ecr:GetAuthorizationToken", ]
     resources = ["*"]
   }
+
+  # allow the role to update the ecs service as well.
+  # this permission is used  in the CI pipelines
+  # of the application repository.
+  statement {
+    resources = ["*"]
+    actions   = ["ecs:UpdateService"]
+  }
 }
 
 resource "aws_iam_policy" "github_actions" {
