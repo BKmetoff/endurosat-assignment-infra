@@ -15,3 +15,6 @@ workspace
 *.out
 
 .env.local
+
+# unused modules
+EventBridge

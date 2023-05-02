@@ -78,8 +78,9 @@ resource "aws_ecs_service" "service" {
 
   name            = "${var.docker_image.name}-${var.environments[count.index]}-service"
   cluster         = aws_ecs_cluster.cluster[count.index].id
-  task_definition = aws_ecs_task_definition.task[count.index].arn
+  task_definition = aws_ecs_task_definition.task[count.index].family
   launch_type     = "FARGATE"
+
   network_configuration {
     security_groups = [aws_security_group.task_sg[count.index].id]
     subnets         = [for id in var.private_subnet_ids : id]

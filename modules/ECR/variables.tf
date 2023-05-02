@@ -4,6 +4,7 @@ variable "name" {
 }
 
 variable "github_actions" {
+  description = "The identifier of the GitHub repository"
   type = object({
     organization = string
     repository   = string
